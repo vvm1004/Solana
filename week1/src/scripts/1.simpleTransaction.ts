@@ -25,10 +25,10 @@ import {
     // airdrop on low balance
     if (currentBalance <= LAMPORTS_PER_SOL) {
       console.log("Low balance, requesting an airdrop...");
-      // await connection.requestAirdrop(payer.publicKey, LAMPORTS_PER_SOL);
+      await connection.requestAirdrop(payer.publicKey, LAMPORTS_PER_SOL);
 
-      const sig = await connection.requestAirdrop(payer.publicKey, LAMPORTS_PER_SOL);
-      await connection.confirmTransaction(sig, "confirmed");
+      // const sig = await connection.requestAirdrop(payer.publicKey, LAMPORTS_PER_SOL);
+      // await connection.confirmTransaction(sig, "confirmed");
     }
   
     // generate a new, random address to create on chain
