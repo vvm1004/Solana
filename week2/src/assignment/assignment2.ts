@@ -1,131 +1,175 @@
 import {
-    createMint,
-    createAssociatedTokenAccountInstruction,
-    mintTo,
-    getAssociatedTokenAddress,
-    createMintToInstruction,
-} from "@solana/spl-token";
-import {
-    createCreateMetadataAccountV3Instruction,
-    createCreateMasterEditionV3Instruction,
-    PROGRAM_ID as METAPLEX_PROGRAM_ID,
-} from "@metaplex-foundation/mpl-token-metadata";
-import {
-    Keypair,
+    Connection,
+    clusterApiUrl,
     PublicKey,
-    TransactionInstruction,
-} from "@solana/web3.js";
-
-import {
-    connection,
-    payer,
-    STATIC_PUBLICKEY,
-} from "../lib/vars";
-
-import { buildTransaction, explorerURL } from "../lib/helpers";
-
-export async function mintFTandNFT() {
-    // 1️⃣ URI metadata thủ công (upload sẵn)
-    const ftUri = "https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/ft.json";
-    const nftUri = "https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/nft.json";
-
-    const instructions: TransactionInstruction[] = [];
-    const signers: Keypair[] = [];
-
-    // 2️⃣ MINT FT
-    const ftMint = Keypair.generate();
-    signers.push(ftMint);
-
-    await createMint(
-        connection,
-        payer,
+    Transaction,
+    sendAndConfirmTransaction,
+  } from "@solana/web3.js";
+  import {
+    createMint,
+    getOrCreateAssociatedTokenAccount,
+    createMintToInstruction,
+  } from "@solana/spl-token";
+  
+  import {
+    createCreateMetadataAccountV2Instruction,
+    createCreateMetadataAccountV3Instruction,
+    CreateMetadataAccountArgsV3,
+    DataV2,
+    PROGRAM_ID as TOKEN_METADATA_PROGRAM_ID,
+  } from "@metaplex-foundation/mpl-token-metadata";
+  
+  import { payer } from "../lib/vars"; 
+  import { Buffer } from "buffer";
+  
+  async function main() {
+    const connection = new Connection(clusterApiUrl("devnet"), "confirmed");
+    console.log("Wallet public key:", payer.publicKey.toBase58());
+  
+    const receiverPubkey = new PublicKey(
+      "63EEC9FfGyksm7PkVC6z8uAmqozbQcTzbkWJNsgqjkFs"
+    );
+  
+    // 1. Tạo mint token fungible (decimals = 6)
+    const decimals = 6;
+    const fungibleMint = await createMint(
+      connection,
+      payer,
+      payer.publicKey,
+      null,
+      decimals
+    );
+  
+    // 2. Tạo mint token NFT (decimals = 0)
+    const nftMint = await createMint(
+      connection,
+      payer,
+      payer.publicKey,
+      null,
+      0
+    );
+  
+    // 3. Tạo associated token accounts cho fungible token
+    const payerTokenAccount = await getOrCreateAssociatedTokenAccount(
+      connection,
+      payer,
+      fungibleMint,
+      payer.publicKey
+    );
+  
+    const receiverTokenAccount = await getOrCreateAssociatedTokenAccount(
+      connection,
+      payer,
+      fungibleMint,
+      receiverPubkey
+    );
+  
+    // 4. Tạo associated token account cho NFT (cho payer)
+    const payerNftTokenAccount = await getOrCreateAssociatedTokenAccount(
+      connection,
+      payer,
+      nftMint,
+      payer.publicKey
+    );
+  
+    // 5. Tạo PDA metadata cho NFT mint
+    const [metadataPDA] = await PublicKey.findProgramAddress(
+      [
+        Buffer.from("metadata"),
+        TOKEN_METADATA_PROGRAM_ID.toBuffer(),
+        nftMint.toBuffer(),
+      ],
+      TOKEN_METADATA_PROGRAM_ID
+    );
+  
+    // 6. Chuẩn bị metadata data cho NFT
+    const metadataData: DataV2 = {
+      name: "MyNFT",
+      symbol: "MYN",
+      uri: "https://raw.githubusercontent.com/vvm1004/Solana/main/assets/nft.json",
+      sellerFeeBasisPoints: 1000, // 10% royalty
+      creators: [
+        {
+          address: payer.publicKey,
+          verified: true,
+          share: 100,
+        },
+      ],
+      collection: null,
+      uses: null,
+    };
+  
+    const metadataArgs: CreateMetadataAccountArgsV3 = {
+        data: metadataData,
+        isMutable: true,
+        collectionDetails: null, 
+      };
+  
+    // 7. Tạo instruction metadata
+    const createMetadataIx = createCreateMetadataAccountV3Instruction(
+      {
+        metadata: metadataPDA,
+        mint: nftMint,
+        mintAuthority: payer.publicKey,
+        payer: payer.publicKey,
+        updateAuthority: payer.publicKey,
+      },
+      {
+        createMetadataAccountArgsV3: metadataArgs,
+      }
+    );
+  
+    // 8. Tạo transaction và add các instruction
+    const transaction = new Transaction();
+  
+    // Mint 100 fungible token cho payer
+    transaction.add(
+      createMintToInstruction(
+        fungibleMint,
+        payerTokenAccount.address,
         payer.publicKey,
-        null,
-        6,
-        ftMint
+        100 * 10 ** decimals
+      )
     );
-
-    const ataSelf = await getAssociatedTokenAddress(ftMint.publicKey, payer.publicKey);
-    const ataOther = await getAssociatedTokenAddress(ftMint.publicKey, STATIC_PUBLICKEY);
-
-    instructions.push(
-        createAssociatedTokenAccountInstruction(payer.publicKey, ataSelf, payer.publicKey, ftMint.publicKey),
-        createAssociatedTokenAccountInstruction(payer.publicKey, ataOther, STATIC_PUBLICKEY, ftMint.publicKey),
-        createMintToInstruction(ftMint.publicKey, ataSelf, payer.publicKey, 100 * 1_000_000),
-        createMintToInstruction(ftMint.publicKey, ataOther, payer.publicKey, 10 * 1_000_000),
+  
+    // Mint 10 fungible token cho receiver
+    transaction.add(
+      createMintToInstruction(
+        fungibleMint,
+        receiverTokenAccount.address,
+        payer.publicKey,
+        10 * 10 ** decimals
+      )
     );
-
-    // 3️⃣ MINT NFT
-    const nftMint = Keypair.generate();
-    signers.push(nftMint);
-
-    const nftTokenAccount = await getAssociatedTokenAddress(nftMint.publicKey, payer.publicKey);
-
-    instructions.push(
-        createAssociatedTokenAccountInstruction(payer.publicKey, nftTokenAccount, payer.publicKey, nftMint.publicKey),
-        createMintToInstruction(nftMint.publicKey, nftTokenAccount, payer.publicKey, 1),
+  
+    // Mint 1 NFT cho payer
+    transaction.add(
+      createMintToInstruction(
+        nftMint,
+        payerNftTokenAccount.address,
+        payer.publicKey,
+        1
+      )
     );
-
-    const [metadataPDA] = PublicKey.findProgramAddressSync(
-        [
-            Buffer.from("metadata"),
-            METAPLEX_PROGRAM_ID.toBuffer(),
-            nftMint.publicKey.toBuffer(),
-        ],
-        METAPLEX_PROGRAM_ID
+  
+    // Thêm instruction tạo metadata NFT
+    transaction.add(createMetadataIx);
+  
+    // 9. Gửi transaction
+    const txSignature = await sendAndConfirmTransaction(connection, transaction, [
+      payer,
+    ]);
+  
+    console.log("Transaction signature:", txSignature);
+    console.log("Fungible token mint address:", fungibleMint.toBase58());
+    console.log("NFT mint address:", nftMint.toBase58());
+    console.log(
+      "Transaction link:",
+      `https://explorer.solana.com/tx/${txSignature}?cluster=devnet`
     );
-
-    const [masterEditionPDA] = PublicKey.findProgramAddressSync(
-        [
-            Buffer.from("metadata"),
-            METAPLEX_PROGRAM_ID.toBuffer(),
-            nftMint.publicKey.toBuffer(),
-            Buffer.from("edition"),
-        ],
-        METAPLEX_PROGRAM_ID
-    );
-
-    instructions.push(
-        createCreateMetadataAccountV3Instruction({
-            metadata: metadataPDA,
-            mint: nftMint.publicKey,
-            mintAuthority: payer.publicKey,
-            payer: payer.publicKey,
-            updateAuthority: payer.publicKey,
-        }, {
-            createMetadataAccountArgsV3: {
-                data: {
-                    name: "MyNFT",
-                    symbol: "MYN",
-                    uri: nftUri,
-                    sellerFeeBasisPoints: 1000,
-                    creators: [{ address: payer.publicKey, share: 100, verified: true }],
-
-                    collection: null,
-                    uses: null,
-                },
-                isMutable: true,
-                collectionDetails: null,
-            }
-        }),
-        createCreateMasterEditionV3Instruction({
-            edition: masterEditionPDA,
-            mint: nftMint.publicKey,
-            updateAuthority: payer.publicKey,
-            mintAuthority: payer.publicKey,
-            metadata: metadataPDA,
-            payer: payer.publicKey,
-        }, {
-            createMasterEditionArgs: {
-                maxSupply: new Number(0),
-            }
-        })
-    );
-
-    // 4️⃣ Gửi transaction
-    const tx = await buildTransaction({ connection, payer: payer.publicKey, signers: [payer, ...signers], instructions });
-    const sig = await connection.sendTransaction(tx, { skipPreflight: false });
-
-    console.log("✅ Transaction signature:", sig);
-    console.log(explorerURL({ txSignature: sig }));
-}
+  }
+  
+  main().catch((error) => {
+    console.error(error);
+  });
+  
