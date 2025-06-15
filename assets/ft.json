@@ -1,0 +1,7 @@
+{
+    "name": "MyToken",
+    "symbol": "MYT",
+    "description": "My custom fungible token",
+    "image": "https://placehold.co/600x400/FFD700/000000.png?text=Fungible+Token"
+  }
+  

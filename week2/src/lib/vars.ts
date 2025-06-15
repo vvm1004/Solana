@@ -1,3 +1,4 @@
+//vars.ts
 import dotenv from "dotenv";
 import { Connection, clusterApiUrl } from "@solana/web3.js";
 import { loadKeypairFromFile, loadOrGenerateKeypair } from "./helpers";

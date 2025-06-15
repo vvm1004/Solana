@@ -5,7 +5,7 @@
  "scripts": {
   "build": "tsc",
   "start": "node dist/index.js",
-  "dev": "ts-node src/scripts/4.createNFTs.ts"
+  "dev": "ts-node src/assignment/assignment2.ts"
 },
   "keywords": [],
   "author": "",

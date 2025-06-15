@@ -1,0 +1,16 @@
+{
+    "name": "MyNFT",
+    "symbol": "MYN",
+    "description": "A beautiful NFT",
+    "image": "https://placehold.co/600x400/ff69b4/000000.png?text=My+NFT",
+    "attributes": [
+      { "trait_type": "rarity", "value": "legendary" }
+    ],
+    "seller_fee_basis_points": 1000,
+    "properties": {
+      "creators": [
+        { "address": "AfMFMYvxRpE9cPqHgTR3wKCJzgXdTDMiywhg9RSGGCRi", "share": 100 }
+      ]
+    }
+  }
+  
