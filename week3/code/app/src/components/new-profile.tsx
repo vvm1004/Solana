@@ -34,7 +34,7 @@ export default function NewProfile() {
       if (!provider || !provider.publicKey) {
         throw new Error("Wallet not connected");
       }
-      console.log("Wallet public key:", provider?.publicKey?.toBase58());
+      // console.log("Wallet public key:", provider?.publicKey?.toBase58());
 
       // const program = new TodoProgram(provider);
       // const tx = await program.createProfile(name);

@@ -12,7 +12,7 @@ export default function TodoList({
   profile,
 }: {
   profile: IdlAccounts<TodoApp>["profile"];
-})  {
+}) {
   const provider = useAnchorProvider();
 
   const { data: todos, isLoading } = useQuery({
@@ -35,8 +35,14 @@ export default function TodoList({
   return (
     <List>
       {todos?.map((todo, idx) => (
-        <TodoItem key={idx} content={todo.content} completed={todo.completed} />
-      ))}
+        <TodoItem
+          key={idx}
+          index={idx}
+          content={todo.content}
+          completed={todo.completed}
+          profileKey={profile.key}
+          onDelete={() => window.location.reload()} // hoặc trigger refetch query
+        />))}
     </List>
   );
 }

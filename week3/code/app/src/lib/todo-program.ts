@@ -49,6 +49,36 @@ export default class TodoProgram {
       } as any)
       .rpc();
   }
+  async toggleTodo(profileKey: PublicKey, todoIndex: number) {
+  const [todo] = PublicKey.findProgramAddressSync(
+    [Buffer.from("todo"), profileKey.toBytes(), Buffer.from([todoIndex])],
+    this.program.programId
+  );
+
+  return await this.program.methods
+    .toggleTodo()
+    .accounts({
+      creator: this.provider.publicKey,
+      profile: profileKey,
+      todo,
+    } as any)
+    .rpc();
+}
+async deleteTodo(profileKey: PublicKey, todoIndex: number) {
+  const [todo] = PublicKey.findProgramAddressSync(
+    [Buffer.from("todo"), profileKey.toBytes(), Buffer.from([todoIndex])],
+    this.program.programId
+  );
+
+  return await this.program.methods
+    .deleteTodo()
+    .accounts({
+      creator: this.provider.publicKey,
+      profile: profileKey,
+      todo,
+    } as any)
+    .rpc();
+}
 
 
   fetchProfile() {

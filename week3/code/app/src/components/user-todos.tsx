@@ -9,6 +9,7 @@ import { Center, Flex, Spinner, Text } from "@chakra-ui/react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useQuery } from "@tanstack/react-query";
 import TodoList from "./todo-list";
+import { useEffect } from "react";
 
 export default function UserTodos() {
   const { publicKey } = useWallet();
@@ -19,6 +20,11 @@ export default function UserTodos() {
     enabled: !!publicKey,
     queryFn: () => new TodoProgram(provider).fetchProfile(),
   });
+  useEffect(() => {
+    if (provider?.publicKey) {
+      console.log("Wallet public key:", provider.publicKey.toBase58());
+    }
+  }, [provider?.publicKey?.toBase58()]);
 
   if (isLoading) {
     return (
