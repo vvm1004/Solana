@@ -1,7 +1,14 @@
 import { AnchorProvider, IdlAccounts, Program, utils } from "@coral-xyz/anchor";
-import { TodoApp, IDL } from "../../../target/types/todo_app";
+import { TodoApp } from "../../../target/types/todo_app";
+import idl from "../../../target/idl/todo_app.json";
 import { Cluster, PublicKey, SystemProgram } from "@solana/web3.js";
-import { getProgramId } from "./helper";
+// import { getProgramId } from "./helper";
+interface Profile {
+  key: PublicKey;
+  name: string;
+  authority: PublicKey;
+  todoCount: number;
+}
 
 export default class TodoProgram {
   program: Program<TodoApp>;
@@ -9,23 +16,40 @@ export default class TodoProgram {
 
   constructor(provider: AnchorProvider, cluster: Cluster = "devnet") {
     this.provider = provider;
-    this.program = new Program(IDL, getProgramId(cluster), provider);
+    this.program = new Program(idl, this.provider);
   }
 
-  createProfile(name: string) {
+
+  // createProfile(name: string) {
+  //   const [profile] = PublicKey.findProgramAddressSync(
+  //     [utils.bytes.utf8.encode("profile"), this.provider.publicKey.toBytes()],
+  //     this.program.programId
+  //   );
+
+  //   const builder = this.program.methods.createProfile(name).accounts({
+  //     creator: this.provider.publicKey,
+  //     profile,
+  //     systemProgram: SystemProgram.programId,
+  //   } as any);
+
+  //   return builder.transaction();
+  // }
+  async createProfile(name: string): Promise<string> {
     const [profile] = PublicKey.findProgramAddressSync(
       [utils.bytes.utf8.encode("profile"), this.provider.publicKey.toBytes()],
       this.program.programId
     );
 
-    const builder = this.program.methods.createProfile(name).accounts({
-      creator: this.provider.publicKey,
-      profile,
-      systemProgram: SystemProgram.programId,
-    });
-
-    return builder.transaction();
+    return await this.program.methods
+      .createProfile(name)
+      .accounts({
+        creator: this.provider.publicKey,
+        profile,
+        systemProgram: SystemProgram.programId,
+      } as any)
+      .rpc();
   }
+
 
   fetchProfile() {
     const [profile] = PublicKey.findProgramAddressSync(
@@ -52,12 +76,12 @@ export default class TodoProgram {
       profile,
       todo,
       systemProgram: SystemProgram.programId,
-    });
+    } as any);
 
     return builder.transaction();
   }
 
-  async fetchTodos(profile: IdlAccounts<typeof IDL>["profile"]) {
+  async fetchTodos(profile: Profile) {
     const todoCount = profile.todoCount;
 
     const todoPdas: PublicKey[] = [];

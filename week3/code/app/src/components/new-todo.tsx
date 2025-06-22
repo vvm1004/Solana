@@ -20,12 +20,13 @@ import {
 import { IdlAccounts } from "@coral-xyz/anchor";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { IDL } from "../../../target/types/todo_app";
+import { TodoApp } from "../../../target/types/todo_app";
+
 
 export default function NewTodo({
   profile,
 }: {
-  profile: IdlAccounts<typeof IDL>["profile"];
+  profile: IdlAccounts<TodoApp>["profile"];
 }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
 

@@ -23,36 +23,53 @@ import { useState } from "react";
 export default function NewProfile() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
-
   const queryClient = useQueryClient();
-
   const [name, setName] = useState("");
 
   const provider = useAnchorProvider();
 
   const { isPending, mutateAsync } = useMutation({
-    mutationKey: ["create-profile", provider.publicKey],
+    mutationKey: ["create-profile"],
     mutationFn: async (name: string) => {
-      const program = new TodoProgram(provider);
+      if (!provider || !provider.publicKey) {
+        throw new Error("Wallet not connected");
+      }
+      console.log("Wallet public key:", provider?.publicKey?.toBase58());
 
-      const tx = await program.createProfile(name);
+      // const program = new TodoProgram(provider);
+      // const tx = await program.createProfile(name);
+      // const signature = await provider.sendAndConfirm(tx);
 
-      const signature = await provider.sendAndConfirm(tx);
+      // return signature;
 
-      return signature;
+       const program = new TodoProgram(provider);
+      const signature = await program.createProfile(name);
+
+        return signature
     },
-    onSuccess: (tx) => {
-      console.log(tx);
+    onSuccess: async (tx) => {
       toast({
-        title: "Transaction sent",
+        title: "Profile created successfully",
+        description: `Transaction: ${tx}`,
         status: "success",
+        duration: 5000,
+        isClosable: true,
       });
 
-      return queryClient.invalidateQueries({
-        queryKey: ["profile", provider.publicKey.toBase58()],
-      });
+      if (provider?.publicKey) {
+        await queryClient.invalidateQueries({
+          queryKey: ["profile", provider.publicKey.toBase58()],
+        });
+      }
     },
-    onError: (error) => {
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create profile",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
       console.error(error);
     },
     onSettled: () => {
@@ -62,21 +79,24 @@ export default function NewProfile() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    mutateAsync(name);
+    await mutateAsync(name);
   };
+
+  const isWalletReady = provider && provider.publicKey;
 
   return (
     <>
-      <Button onClick={onOpen} colorScheme="blue">
+      <Button onClick={onOpen} colorScheme="blue" isDisabled={!isWalletReady}>
         New profile
       </Button>
+
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent as="form" onSubmit={handleSubmit}>
           <ModalHeader>New profile</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
-            <FormControl>
+            <FormControl isDisabled={!isWalletReady}>
               <FormLabel>Name</FormLabel>
               <Input
                 value={name}
@@ -94,6 +114,7 @@ export default function NewProfile() {
               colorScheme="blue"
               loadingText="Creating"
               ml={3}
+              isDisabled={!isWalletReady || !name}
             >
               Create
             </Button>

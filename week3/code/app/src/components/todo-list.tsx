@@ -5,14 +5,14 @@ import TodoProgram from "@/lib/todo-program";
 import { Center, Flex, List, Spinner, Text } from "@chakra-ui/react";
 import { IdlAccounts } from "@coral-xyz/anchor";
 import { useQuery } from "@tanstack/react-query";
-import { IDL } from "../../../target/types/todo_app";
+import { TodoApp } from "../../../target/types/todo_app";
 import TodoItem from "./todo-item";
 
 export default function TodoList({
   profile,
 }: {
-  profile: IdlAccounts<typeof IDL>["profile"];
-}) {
+  profile: IdlAccounts<TodoApp>["profile"];
+})  {
   const provider = useAnchorProvider();
 
   const { data: todos, isLoading } = useQuery({

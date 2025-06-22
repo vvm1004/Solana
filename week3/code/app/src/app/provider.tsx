@@ -22,8 +22,8 @@ export default function Provider({
 }>) {
   const network = WalletAdapterNetwork.Devnet;
 
-  // const endpoint = useMemo(() => clusterApiUrl(network), [network]);
-  const endpoint = process.env.NEXT_PUBLIC_RPC_URL!;
+  const endpoint = useMemo(() => clusterApiUrl(network), [network]);
+  // const endpoint = process.env.NEXT_PUBLIC_RPC_URL!;
 
   const wallets = useMemo(
     () => [new PhantomWalletAdapter(), new SolflareWalletAdapter()],
