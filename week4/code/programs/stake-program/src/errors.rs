@@ -4,10 +4,10 @@ use anchor_lang::prelude::*;
 pub enum AppError {
     #[msg("Tokens are already staked")]
     IsStaked,
-
     #[msg("Tokens are not staked")]
     NotStaked,
-
     #[msg("No tokens to stake")]
-    NoToken
+    NoToken,
+    #[msg("Invalid mint")]
+    InvalidMint,
 }

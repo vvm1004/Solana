@@ -1,8 +1,9 @@
-use crate::contants::REWARD_VAULT_SEED;
+use crate::constants::REWARD_VAULT_SEED;
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token, TokenAccount};
 
 #[derive(Accounts)]
+#[instruction()]
 pub struct Initialize<'info> {
     #[account(mut)]
     pub admin: Signer<'info>,
@@ -12,7 +13,7 @@ pub struct Initialize<'info> {
     #[account(
         init_if_needed,
         payer = admin,
-        seeds = [REWARD_VAULT_SEED], // How would the system handle multiple reward vaults for different tokens?        
+        seeds = [REWARD_VAULT_SEED, mint.key().as_ref()],
         bump,
         token::mint = mint,
         token::authority = reward_vault,

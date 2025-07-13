@@ -1,14 +1,14 @@
-use crate::contants::STAKE_INFO_SEED;
+use crate::constants::STAKE_INFO_SEED;
 use crate::errors::AppError;
 use crate::state::StakeInfo;
 use anchor_lang::prelude::*;
-use anchor_spl::token::Transfer;
 use anchor_spl::{
     associated_token::AssociatedToken,
-    token::{transfer, Mint, Token, TokenAccount},
+    token::{transfer, Mint, Token, TokenAccount, Transfer},
 };
 
 #[derive(Accounts)]
+#[instruction()]
 pub struct Stake<'info> {
     #[account(mut)]
     pub staker: Signer<'info>,
@@ -18,7 +18,7 @@ pub struct Stake<'info> {
     #[account(
         init_if_needed,
         payer = staker,
-        seeds = [STAKE_INFO_SEED, staker.key().as_ref()], // What if a user wants to stake multiple types of tokens?        
+        seeds = [STAKE_INFO_SEED, staker.key().as_ref(), mint.key().as_ref()],
         bump,
         space = 8 + StakeInfo::INIT_SPACE
     )]
@@ -45,25 +45,19 @@ pub struct Stake<'info> {
 }
 
 pub fn stake(ctx: Context<Stake>, amount: u64) -> Result<()> {
-    let stake_info = &mut ctx.accounts.stake_info;
-
-    if stake_info.is_staked {
-        return Err(AppError::IsStaked.into());
-    }
-
-    if amount <= 0 {
+    if amount == 0 {
         return Err(AppError::NoToken.into());
     }
 
     let clock = Clock::get()?;
+    let stake_info = &mut ctx.accounts.stake_info;
 
     stake_info.staker = ctx.accounts.staker.key();
     stake_info.mint = ctx.accounts.mint.key();
     stake_info.stake_at = clock.slot;
     stake_info.is_staked = true;
-    stake_info.amount = amount;
+    stake_info.amount = stake_info.amount.checked_add(amount).unwrap();
 
-    // transfer token to vault
     transfer(
         CpiContext::new(
             ctx.accounts.token_program.to_account_info(),
