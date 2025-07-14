@@ -1,10 +1,18 @@
+// src/lib.rs
 use anchor_lang::prelude::*;
 
 mod errors;
 mod instructions;
 mod state;
+mod utils;
 
-declare_id!("8QNTeqVq25xDKycxbcyKQPXQShcGLhatWwiZ6MqJQ1we");
+
+use instructions::{CreateAmm, CreatePool, DepositLiquidity, WithdrawLiquidity, Swap};
+
+
+declare_id!("HHmUttCbE4eC3a98VH2o7gGG8yFNHtdeeuMBaa8M3aae");
+#[derive(Accounts)]
+pub struct Initialize {}
 
 #[program]
 pub mod amm {
@@ -32,12 +40,12 @@ pub mod amm {
         instructions::withdraw_liquidity(ctx, amount)
     }
 
-    pub fn swap(
-        ctx: Context<Swap>,
-        swap_a: bool,
-        input_amount: u64,
-        min_output_amount: u64,
-    ) -> Result<()> {
+    pub fn swap(ctx: Context<Swap>, swap_a: bool, input_amount: u64, min_output_amount: u64) -> Result<()> {
         instructions::swap(ctx, swap_a, input_amount, min_output_amount)
+    }
+
+    
+    pub fn initialize(_ctx: Context<Initialize>) -> Result<()> {
+        Ok(())
     }
 }

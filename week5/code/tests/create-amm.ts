@@ -32,7 +32,7 @@ describe("create-amm", () => {
         amm: ammPda,
         admin: provider.publicKey,
         systemProgram: anchor.web3.SystemProgram.programId,
-      })
+      } as any)
       .rpc();
 
     console.log("Your transaction signature", tx);
@@ -57,7 +57,7 @@ describe("create-amm", () => {
           amm: ammPda,
           admin: provider.publicKey,
           systemProgram: anchor.web3.SystemProgram.programId,
-        })
+        } as any)
         .rpc()
     );
   });

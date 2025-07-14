@@ -53,7 +53,7 @@ describe("create-pool", () => {
         amm: ammPda,
         admin: payer.publicKey,
         systemProgram: anchor.web3.SystemProgram.programId,
-      })
+      } as any)
       .signers([payer])
       .rpc();
 
@@ -142,7 +142,7 @@ describe("create-pool", () => {
           systemProgram: anchor.web3.SystemProgram.programId,
           tokenProgram: TOKEN_PROGRAM_ID,
           associatedTokenProgram: ASSOCIATED_PROGRAM_ID,
-        })
+        } as any)
         .signers([payer])
         .rpc();
 

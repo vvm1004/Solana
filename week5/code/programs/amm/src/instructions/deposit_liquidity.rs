@@ -1,3 +1,4 @@
+// src/instructions/deposit_liquidity.rs
 use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
@@ -6,44 +7,7 @@ use anchor_spl::{
 
 use crate::state::Pool;
 use crate::errors::AppError;
-
-// Helper function to calculate integer square root using Newton's method
-fn integer_sqrt(n: u128) -> u64 {
-    if n == 0 {
-        return 0;
-    }
-    
-    let mut x = n;
-    let mut y = (x + 1) / 2;
-    
-    while y < x {
-        x = y;
-        y = (x + n / x) / 2;
-    }
-    
-    x as u64
-}
-
-// Helper function for safe multiplication and division
-fn mul_div_u64(a: u64, b: u64, c: u64) -> Result<u64> {
-    if c == 0 {
-        return Err(AppError::CalculationError.into());
-    }
-    
-    // Use u128 to prevent overflow during multiplication
-    let result = (a as u128)
-        .checked_mul(b as u128)
-        .ok_or(AppError::CalculationError)?
-        .checked_div(c as u128)
-        .ok_or(AppError::CalculationError)?;
-    
-    // Check if result fits in u64
-    if result > u64::MAX as u128 {
-        return Err(AppError::CalculationError.into());
-    }
-    
-    Ok(result as u64)
-}
+use crate::utils::{integer_sqrt, mul_div_u64};
 
 pub fn deposit_liquidity(
     ctx: Context<DepositLiquidity>,

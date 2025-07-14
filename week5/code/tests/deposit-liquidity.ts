@@ -76,7 +76,7 @@ describe("deposit-liquidity", () => {
         amm: ammPda,
         admin: provider.publicKey,
         systemProgram: anchor.web3.SystemProgram.programId,
-      })
+      } as any)
       .rpc();
 
     console.log("Create AMM success signature", createAmmTx);
@@ -158,7 +158,7 @@ describe("deposit-liquidity", () => {
         tokenProgram: TOKEN_PROGRAM_ID,
         associatedTokenProgram: ASSOCIATED_PROGRAM_ID,
         systemProgram: anchor.web3.SystemProgram.programId,
-      })
+      } as any)
       .rpc();
 
     console.log("Create pool success signature", createPoolTx);
@@ -204,7 +204,7 @@ describe("deposit-liquidity", () => {
         tokenProgram: TOKEN_PROGRAM_ID,
         associatedTokenProgram: ASSOCIATED_PROGRAM_ID,
         systemProgram: anchor.web3.SystemProgram.programId,
-      })
+      } as any)
       .signers([depositor])
       .rpc();
 
@@ -262,7 +262,7 @@ describe("deposit-liquidity", () => {
         tokenProgram: TOKEN_PROGRAM_ID,
         associatedTokenProgram: ASSOCIATED_PROGRAM_ID,
         systemProgram: anchor.web3.SystemProgram.programId,
-      })
+      } as any)
       .signers([depositor])
       .rpc();
 
