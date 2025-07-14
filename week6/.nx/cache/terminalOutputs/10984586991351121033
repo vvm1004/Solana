@@ -1,0 +1,14 @@
+node:internal/process/promises:391
+    triggerUncaughtException(err, true /* fromPromise */);
+    ^
+
+Error: connect ECONNREFUSED 127.0.0.1:3000
+[90m    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1607:16)[39m {
+  errno: [33m-111[39m,
+  code: [32m'ECONNREFUSED'[39m,
+  syscall: [32m'connect'[39m,
+  address: [32m'127.0.0.1'[39m,
+  port: [33m3000[39m
+}
+
+Node.js v20.18.0

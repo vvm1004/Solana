@@ -1,0 +1,18 @@
+# === Node / Vite / React / Next.js ===
+node_modules/
+dist/
+build/
+.next/
+out/
+
+# === Env / config ===
+.env
+.env.*
+*.local
+
+# === Misc ===
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo

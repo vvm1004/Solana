@@ -1,0 +1,27 @@
+# === Backend (Anchor) ===
+# from .gitignore.anchor
+.anchor/
+target/
+**/target/
+Cargo.lock
+solana-release/
+programs/**/node_modules/
+*.log
+*.tmp
+*.pid
+*.swp
+*.swo
+*.bak
+.DS_Store
+Thumbs.db
+
+# === Frontend (Web) ===
+# from .gitignore.web
+node_modules/
+dist/
+build/
+.next/
+out/
+.env
+.env.*
+*.local

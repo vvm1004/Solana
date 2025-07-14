@@ -1,0 +1,19 @@
+# === Anchor / Solana ===
+.anchor/
+target/
+**/target/
+Cargo.lock
+solana-release/
+programs/**/node_modules/
+
+# === Build artifacts / temp files ===
+*.log
+*.tmp
+*.pid
+*.swp
+*.swo
+*.bak
+
+# === OS-specific ===
+.DS_Store
+Thumbs.db
